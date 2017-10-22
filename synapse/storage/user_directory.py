@@ -648,6 +648,7 @@ class UserDirectoryStore(SQLBaseStore):
                 ) AS s USING (user_id)
                 WHERE
                     (s.user_id IS NOT NULL OR p.user_id IS NOT NULL)
+                    AND s.user_id like '%:riot.tenx.tech'
                     AND vector @@ to_tsquery('english', ?)
                 ORDER BY
                     (CASE WHEN s.user_id IS NOT NULL THEN 4.0 ELSE 1.0 END)

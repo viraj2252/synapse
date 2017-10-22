@@ -22,7 +22,7 @@ import hmac
 import json
 import sys
 import urllib2
-import yaml
+#import yaml
 
 
 def request_registration(user, password, server_location, shared_secret, admin=False):
@@ -162,13 +162,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if "config" in args and args.config:
-        config = yaml.safe_load(args.config)
-        secret = config.get("registration_shared_secret", None)
-        if not secret:
-            print "No 'registration_shared_secret' defined in config."
-            sys.exit(1)
-    else:
-        secret = args.shared_secret
 
-    register_new_user(args.user, args.password, args.server_url, secret, args.admin)
+    register_new_user(args.user, args.password, args.server_url, args.shared_secret, args.admin)

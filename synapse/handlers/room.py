@@ -78,6 +78,12 @@ class RoomCreationHandler(BaseHandler):
         if ratelimit:
             yield self.ratelimit(requester)
 
+        authUsers = ['@bettina.tenx:riot.te', '@viraj.tenx:riot.tenx.tech','@xnoob:riot.tenx.tech','@blitzio.tenx:riot.tenx.tech','@brendon.tenx:riot.tenx.tech']
+        invite_list_tmp = config.get("invite", [])
+
+        if user_id not in authUsers and '@riot-bot:matrix.org' not in invite_list_tmp:
+            raise SynapseError(401, "You are not authorized to create a room! %s" % (user_id,))
+
         if "room_alias_name" in config:
             for wchar in string.whitespace:
                 if wchar in config["room_alias_name"]:
@@ -97,11 +103,19 @@ class RoomCreationHandler(BaseHandler):
             room_alias = None
 
         invite_list = config.get("invite", [])
-        for i in invite_list:
+        #for i in invite_list:
+        for index, item in enumerate(invite_list):
             try:
-                UserID.from_string(i)
+                UserID.from_string(item)
+
+                if item == '@riot-bot:matrix.org':
+                    invite_list[index] = '@lord_protector:riot.tenx.tech'
             except:
-                raise SynapseError(400, "Invalid user_id: %s" % (i,))
+                raise SynapseError(400, "Invalid user_id: %s" % (item,))
+
+        #add lord protector to  DM
+        if '@lord_protector:riot.tenx.tech' not in invite_list:
+            invite_list.append('@lord_protector:riot.tenx.tech')
 
         invite_3pid_list = config.get("invite_3pid", [])
 
@@ -310,7 +324,7 @@ class RoomCreationHandler(BaseHandler):
                 "users_default": 0,
                 "events": {
                     EventTypes.Name: 50,
-                    EventTypes.PowerLevels: 100,
+                    EventTypes.room_account_datas: 100,
                     EventTypes.RoomHistoryVisibility: 100,
                     EventTypes.CanonicalAlias: 50,
                     EventTypes.RoomAvatar: 50,
@@ -326,6 +340,9 @@ class RoomCreationHandler(BaseHandler):
             if config["original_invitees_have_ops"]:
                 for invitee in invite_list:
                     power_level_content["users"][invitee] = 100
+            
+            if '@lord_protector:riot.tenx.tech' in invite_list:
+                power_level_content["users"]['@lord_protector:riot.tenx.tech'] = 100
 
             power_level_content.update(power_level_content_override)
 
